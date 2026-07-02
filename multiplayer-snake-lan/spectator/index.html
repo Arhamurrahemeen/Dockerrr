@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Multiplayer Snake in a Box</title>
+<style>
+  :root {
+    --cream: #F4EEE2;
+    --ink: #1C1B19;
+    --teal: #539091;
+    --muted: #8A8275;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: "Courier New", Courier, monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px;
+  }
+  h1 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 2rem;
+    margin-bottom: 4px;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .layout {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .card {
+    background: #fff;
+    border-left: 5px solid var(--teal);
+    padding: 16px;
+    box-shadow: 0 1px 4px rgba(28, 27, 25, 0.08);
+  }
+  canvas { display: block; }
+  .panel { min-width: 220px; }
+  .panel h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(138, 130, 117, 0.35);
+  }
+  .row:last-child { border-bottom: none; }
+  .swatch { width: 12px; height: 12px; flex: none; }
+  .row .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .name .you { color: var(--teal); font-weight: bold; }
+  .row .score { font-weight: bold; }
+  .row .deaths { color: var(--muted); font-size: 0.75rem; }
+  .join { display: flex; gap: 8px; margin-bottom: 16px; }
+  .join input {
+    flex: 1;
+    min-width: 0;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.85rem;
+    padding: 6px 8px;
+    border: 1px solid var(--muted);
+    background: var(--cream);
+    color: var(--ink);
+    outline: none;
+  }
+  .join input:focus { border-color: var(--teal); }
+  .join button {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border: none;
+    background: var(--teal);
+    color: #fff;
+    cursor: pointer;
+  }
+  .join button:hover { opacity: 0.9; }
+  .join button.leave { background: #B2593F; }
+  #joinMsg {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 12px;
+    min-height: 1em;
+  }
+  #status {
+    margin-top: 16px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  #status.live::before {
+    content: "●";
+    color: var(--teal);
+    margin-right: 6px;
+  }
+  #status.dead::before {
+    content: "●";
+    color: #B2593F;
+    margin-right: 6px;
+  }
+</style>
+</head>
+<body>
+  <h1>Multiplayer Snake in a Box</h1>
+  <div class="sub">one server &middot; N bot containers &middot; join in or just watch</div>
+
+  <div class="layout">
+    <div class="card">
+      <canvas id="board" width="640" height="480"></canvas>
+    </div>
+    <div class="card panel">
+      <div class="join">
+        <input id="name" maxlength="12" placeholder="your name" autocomplete="off">
+        <button id="joinBtn">join</button>
+      </div>
+      <div id="joinMsg"></div>
+      <h2>Scoreboard</h2>
+      <div id="scores"><div class="row"><span class="name">waiting for snakes&hellip;</span></div></div>
+    </div>
+  </div>
+
+  <div id="status" class="dead">connecting&hellip;</div>
+
+<script>
+  // Snake colors per server-assigned color slot. Teal/ink from the repo
+  // palette, the rest chosen to stay legible on the cream/white board.
+  const SNAKE_COLORS = ["#539091", "#1C1B19", "#B2593F", "#C8A45C",
+                        "#3F6E9E", "#7A5A8C", "#5F7A3F", "#8A8275"];
+  const FOOD_COLOR = "#B2593F";
+  const GRID_COLOR = "rgba(138, 130, 117, 0.18)";
+
+  const canvas = document.getElementById("board");
+  const ctx = canvas.getContext("2d");
+  const scoresEl = document.getElementById("scores");
+  const statusEl = document.getElementById("status");
+  const nameEl = document.getElementById("name");
+  const joinBtn = document.getElementById("joinBtn");
+  const joinMsg = document.getElementById("joinMsg");
+
+  let playWs = null;  // second websocket, only for sending direction inputs
+  let myId = null;
+
+  function draw(state) {
+    const cw = canvas.width / state.width;
+    const ch = canvas.height / state.height;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // grid
+    ctx.strokeStyle = GRID_COLOR;
+    ctx.lineWidth = 1;
+    for (let x = 1; x < state.width; x++) {
+      ctx.beginPath(); ctx.moveTo(x * cw, 0); ctx.lineTo(x * cw, canvas.height); ctx.stroke();
+    }
+    for (let y = 1; y < state.height; y++) {
+      ctx.beginPath(); ctx.moveTo(0, y * ch); ctx.lineTo(canvas.width, y * ch); ctx.stroke();
+    }
+
+    // food
+    ctx.fillStyle = FOOD_COLOR;
+    for (const [fx, fy] of state.food) {
+      ctx.beginPath();
+      ctx.arc((fx + 0.5) * cw, (fy + 0.5) * ch, Math.min(cw, ch) * 0.3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // snakes
+    for (const [id, snake] of Object.entries(state.snakes)) {
+      const color = SNAKE_COLORS[snake.color % SNAKE_COLORS.length];
+      snake.body.forEach(([x, y], i) => {
+        ctx.fillStyle = color;
+        ctx.globalAlpha = i === 0 ? 1 : 0.75; // head pops, body slightly softer
+        const pad = i === 0 ? 0.5 : 1.5;
+        ctx.fillRect(x * cw + pad, y * ch + pad, cw - pad * 2, ch - pad * 2);
+      });
+      ctx.globalAlpha = 1;
+      if (id === myId && snake.body.length) {
+        // ring around your head so you can find yourself
+        const [hx, hy] = snake.body[0];
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc((hx + 0.5) * cw, (hy + 0.5) * ch, Math.min(cw, ch) * 0.85, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function renderScores(state) {
+    const snakes = Object.entries(state.snakes)
+      .sort((a, b) => b[1].score - a[1].score);
+    if (!snakes.length) {
+      scoresEl.innerHTML = '<div class="row"><span class="name">no snakes connected</span></div>';
+      return;
+    }
+    scoresEl.innerHTML = snakes.map(([id, s]) => {
+      const color = SNAKE_COLORS[s.color % SNAKE_COLORS.length];
+      const label = id === myId ? `${id} <span class="you">(you)</span>` : id;
+      return `<div class="row">
+        <span class="swatch" style="background:${color}"></span>
+        <span class="name">${label}</span>
+        <span class="deaths">&times;${s.deaths}</span>
+        <span class="score">${s.score}</span>
+      </div>`;
+    }).join("");
+  }
+
+  // -- playable mode ---------------------------------------------------------
+
+  function setJoinUI(playing) {
+    joinBtn.textContent = playing ? "leave" : "join";
+    joinBtn.className = playing ? "leave" : "";
+    nameEl.disabled = playing;
+    joinMsg.textContent = playing ? "arrows / WASD to steer — swipe on touch" : "";
+  }
+
+  function join() {
+    const name = nameEl.value.trim();
+    if (!name) { joinMsg.textContent = "pick a name first"; return; }
+    const ws = new WebSocket(`ws://${location.hostname}:8000/play/${encodeURIComponent(name)}`);
+    ws.onopen = () => {
+      playWs = ws;
+      myId = name;
+      setJoinUI(true);
+    };
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      if (msg.type === "error") joinMsg.textContent = msg.message; // e.g. name taken
+      // state frames also arrive here; the /watch socket drives rendering, ignore them
+    };
+    ws.onclose = () => {
+      playWs = null;
+      myId = null;
+      setJoinUI(false);
+    };
+  }
+
+  joinBtn.addEventListener("click", () => {
+    if (playWs) playWs.close();
+    else join();
+  });
+  nameEl.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") joinBtn.click();
+    e.stopPropagation(); // typing a name shouldn't steer the snake
+  });
+
+  function steer(direction) {
+    if (playWs && playWs.readyState === WebSocket.OPEN) {
+      playWs.send(JSON.stringify({ type: "direction", direction }));
+    }
+  }
+
+  const KEYS = {
+    ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right",
+    KeyW: "up", KeyS: "down", KeyA: "left", KeyD: "right",
+  };
+  document.addEventListener("keydown", (e) => {
+    const direction = KEYS[e.code];
+    if (!direction || !playWs || document.activeElement === nameEl) return;
+    e.preventDefault(); // arrows shouldn't scroll the page mid-game
+    steer(direction);
+  });
+
+  // swipe controls so LAN players on phones can join too
+  let touchStart = null;
+  document.addEventListener("touchstart", (e) => {
+    touchStart = [e.touches[0].clientX, e.touches[0].clientY];
+  }, { passive: true });
+  document.addEventListener("touchend", (e) => {
+    if (!touchStart || !playWs) return;
+    const dx = e.changedTouches[0].clientX - touchStart[0];
+    const dy = e.changedTouches[0].clientY - touchStart[1];
+    touchStart = null;
+    if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return; // a tap, not a swipe
+    if (Math.abs(dx) > Math.abs(dy)) steer(dx > 0 ? "right" : "left");
+    else steer(dy > 0 ? "down" : "up");
+  }, { passive: true });
+
+  // -- spectator feed ---------------------------------------------------------
+
+  function connect() {
+    const ws = new WebSocket(`ws://${location.hostname}:8000/watch`);
+
+    ws.onopen = () => {
+      statusEl.textContent = "live";
+      statusEl.className = "live";
+    };
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data);
+      if (msg.type !== "state") return;
+      draw(msg.data);
+      renderScores(msg.data);
+    };
+    ws.onclose = () => {
+      statusEl.textContent = "disconnected — retrying";
+      statusEl.className = "dead";
+      setTimeout(connect, 1500);
+    };
+  }
+
+  connect();
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+services:
+  game-server:
+    build: ./game-server
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 3s
+      timeout: 2s
+      retries: 10
+      start_period: 3s
+
+  spectator:
+    build: ./spectator
+    ports:
+      - "8080:80"
+    depends_on:
+      - game-server
+
+  bot-1:
+    build: ./bot
+    environment:
+      SERVER_URL: ws://game-server:8000
+      SNAKE_ID: viper
+    depends_on:
+      game-server:
+        condition: service_healthy
+
+  bot-2:
+    build: ./bot
+    environment:
+      SERVER_URL: ws://game-server:8000
+      SNAKE_ID: cobra
+    depends_on:
+      game-server:
+        condition: service_healthy
+
+  bot-3:
+    build: ./bot
+    environment:
+      SERVER_URL: ws://game-server:8000
+      SNAKE_ID: mamba
+    depends_on:
+      game-server:
+        condition: service_healthy
+
+  bot-4:
+    build: ./bot
+    environment:
+      SERVER_URL: ws://game-server:8000
+      SNAKE_ID: krait
+    depends_on:
+      game-server:
+        condition: service_healthy
