@@ -4,6 +4,10 @@
 
 Four bots play snake against each other on one authoritative server, and every player is genuinely its own container — own process, own decision loop, own lifecycle. Run `docker ps` while it's going and every container on screen is doing real work. Stop one mid-game and the server doesn't blink; the dead snake just vanishes from the board.
 
+<p align="center">
+  <img src="assets/multiplayer-snake-lan-architecture.svg" alt="Architecture: four bot containers and human players connect over websockets to the game-server, which broadcasts state to the spectator container." width="100%"/>
+</p>
+
 ## Quick start
 
 ```bash
@@ -16,13 +20,17 @@ Then open [http://localhost:8080](http://localhost:8080) and watch four snakes f
 
 Or don't just watch — type a name, hit join, and steer with arrows/WASD (swipe on a phone). Anyone on your LAN can open `http://<your-ip>:8080` and jump in against the bots too. That's the `-lan` part of the name earning its keep.
 
-Try killing one:
+## Kill one mid-game
 
 ```bash
 docker stop multiplayer-snake-lan-bot-3-1
 ```
 
 The other three keep playing. That's the whole point.
+
+<p align="center">
+  <img src="assets/multiplayer-snake-lan-lifecycle.svg" alt="Lifecycle: after docker stop mamba, the server and the other three bots keep running; the dead snake just disappears from the board." width="100%"/>
+</p>
 
 ## Architecture
 

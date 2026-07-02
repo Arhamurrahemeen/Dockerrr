@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620" role="img" aria-label="Architecture diagram: four bot containers and human players connect over websockets to a game-server container which broadcasts state to a spectator container.">
+  <defs>
+    <pattern id="dots" x="0" y="0" width="18" height="18" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1" fill="#1C1B19" fill-opacity="0.05"/>
+    </pattern>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#539091"/>
+    </marker>
+    <marker id="arrowMuted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8A8275"/>
+    </marker>
+  </defs>
+
+  <!-- background -->
+  <rect width="1200" height="620" fill="#F4EEE2"/>
+  <rect width="1200" height="620" fill="url(#dots)"/>
+
+  <!-- editorial frame -->
+  <rect x="24" y="24" width="1152" height="572" fill="none" stroke="#1C1B19" stroke-width="1"/>
+  <rect x="32" y="32" width="1136" height="556" fill="none" stroke="#1C1B19" stroke-width="0.5" stroke-opacity="0.4"/>
+
+  <!-- masthead -->
+  <text x="60" y="76" font-family="Courier New, monospace" font-size="11" letter-spacing="2" fill="#8A8275">SYSTEM · MAP</text>
+  <text x="60" y="114" font-family="Georgia, serif" font-style="italic" font-size="28" fill="#1C1B19">Six containers, one authoritative server.</text>
+  <line x1="60" y1="134" x2="1140" y2="134" stroke="#1C1B19" stroke-opacity="0.15" stroke-width="1"/>
+
+  <!-- LEFT column: bots -->
+  <text x="90" y="170" font-family="Courier New, monospace" font-size="10" letter-spacing="2" fill="#8A8275">BOT CONTAINERS · x4</text>
+
+  <!-- bot card generator (four cards) -->
+  <!-- bot-1 -->
+  <g>
+    <rect x="90" y="188" width="230" height="66" fill="#FFFFFF" stroke="#E0D8CA" stroke-width="1" rx="6"/>
+    <rect x="90" y="188" width="5" height="66" fill="#539091" rx="2"/>
+    <text x="112" y="212" font-family="Georgia, serif" font-style="italic" font-size="17" fill="#1C1B19">bot · viper</text>
+    <text x="112" y="234" font-family="Courier New, monospace" font-size="11" fill="#6E6A62">greedy pathing → /play</text>
+    <text x="112" y="248" font-family="Courier New, monospace" font-size="10" fill="#8A8275">SNAKE_ID=viper</text>
+  </g>
+  <!-- bot-2 -->
+  <g>
+    <rect x="90" y="266" width="230" height="66" fill="#FFFFFF" stroke="#E0D8CA" stroke-width="1" rx="6"/>
+    <rect x="90" y="266" width="5" height="66" fill="#539091" rx="2"/>
+    <text x="112" y="290" font-family="Georgia, serif" font-style="italic" font-size="17" fill="#1C1B19">bot · cobra</text>
+    <text x="112" y="312" font-family="Courier New, monospace" font-size="11" fill="#6E6A62">greedy pathing → /play</text>
+    <text x="112" y="326" font-family="Courier New, monospace" font-size="10" fill="#8A8275">SNAKE_ID=cobra</text>
+  </g>
+  <!-- bot-3 -->
+  <g>
+    <rect x="90" y="344" width="230" height="66" fill="#FFFFFF" stroke="#E0D8CA" stroke-width="1" rx="6"/>
+    <rect x="90" y="344" width="5" height="66" fill="#539091" rx="2"/>
+    <text x="112" y="368" font-family="Georgia, serif" font-style="italic" font-size="17" fill="#1C1B19">bot · mamba</text>
+    <text x="112" y="390" font-family="Courier New, monospace" font-size="11" fill="#6E6A62">greedy pathing → /play</text>
+    <text x="112" y="404" font-family="Courier New, monospace" font-size="10" fill="#8A8275">SNAKE_ID=mamba</text>
+  </g>
+  <!-- bot-4 -->
+  <g>
+    <rect x="90" y="422" width="230" height="66" fill="#FFFFFF" stroke="#E0D8CA" stroke-width="1" rx="6"/>
+    <rect x="90" y="422" width="5" height="66" fill="#539091" rx="2"/>
+    <text x="112" y="446" font-family="Georgia, serif" font-style="italic" font-size="17" fill="#1C1B19">bot · krait</text>
+    <text x="112" y="468" font-family="Courier New, monospace" font-size="11" fill="#6E6A62">greedy pathing → /play</text>
+    <text x="112" y="482" font-family="Courier New, monospace" font-size="10" fill="#8A8275">SNAKE_ID=krait</text>
+  </g>
+
+  <!-- humans on LAN card -->
+  <text x="90" y="520" font-family="Courier New, monospace" font-size="10" letter-spacing="2" fill="#8A8275">HUMANS · SAME LAN</text>
+  <g>
+    <rect x="90" y="530" width="230" height="46" fill="#FFFFFF" stroke="#E0D8CA" stroke-width="1" rx="6"/>
+    <rect x="90" y="530" width="5" height="46" fill="#539091" rx="2"/>
+    <text x="112" y="551" font-family="Georgia, serif" font-style="italic" font-size="15" fill="#1C1B19">any browser → /play</text>
+    <text x="112" y="568" font-family="Courier New, monospace" font-size="10" fill="#8A8275">no special treatment</text>
+  </g>
+
+  <!-- CENTER: game-server -->
+  <text x="470" y="170" font-family="Courier New, monospace" font-size="10" letter-spacing="2" fill="#8A8275">AUTHORITATIVE SERVER</text>
+
+  <g>
+    <rect x="470" y="188" width="290" height="270" fill="#FFFFFF" stroke="#E0D8CA" stroke-width="1" rx="6"/>
+    <rect x="470" y="188" width="5" height="270" fill="#539091" rx="2"/>
+
+    <text x="492" y="216" font-family="Georgia, serif" font-style="italic" font-size="22" fill="#1C1B19">game-server</text>
+    <text x="492" y="236" font-family="Courier New, monospace" font-size="10" letter-spacing="1" fill="#8A8275">FASTAPI · ASYNCIO · WEBSOCKETS</text>
+
+    <line x1="492" y1="252" x2="740" y2="252" stroke="#1C1B19" stroke-opacity="0.1"/>
+
+    <text x="492" y="276" font-family="Courier New, monospace" font-size="12" fill="#1C1B19">• single source of truth</text>
+    <text x="492" y="296" font-family="Courier New, monospace" font-size="12" fill="#1C1B19">• tick loop ~6.7/sec</text>
+    <text x="492" y="316" font-family="Courier New, monospace" font-size="12" fill="#1C1B19">• only ticks when someone's here</text>
+    <text x="492" y="336" font-family="Courier New, monospace" font-size="12" fill="#1C1B19">• bots send direction, nothing more</text>
+
+    <line x1="492" y1="352" x2="740" y2="352" stroke="#1C1B19" stroke-opacity="0.1"/>
+
+    <text x="492" y="376" font-family="Courier New, monospace" font-size="11" fill="#539091">ws  /play/{snake_id}</text>
+    <text x="492" y="396" font-family="Courier New, monospace" font-size="11" fill="#539091">ws  /watch</text>
+    <text x="492" y="416" font-family="Courier New, monospace" font-size="11" fill="#539091">http /health</text>
+
+    <text x="492" y="442" font-family="Courier New, monospace" font-size="10" fill="#8A8275">port 8000</text>
+  </g>
+
+  <!-- RIGHT: spectator -->
+  <text x="890" y="170" font-family="Courier New, monospace" font-size="10" letter-spacing="2" fill="#8A8275">SPECTATOR CONTAINER</text>
+
+  <g>
+    <rect x="890" y="188" width="220" height="200" fill="#FFFFFF" stroke="#E0D8CA" stroke-width="1" rx="6"/>
+    <rect x="890" y="188" width="5" height="200" fill="#539091" rx="2"/>
+    <text x="912" y="216" font-family="Georgia, serif" font-style="italic" font-size="20" fill="#1C1B19">spectator</text>
+    <text x="912" y="236" font-family="Courier New, monospace" font-size="10" letter-spacing="1" fill="#8A8275">NGINX · STATIC HTML</text>
+
+    <line x1="912" y1="252" x2="1090" y2="252" stroke="#1C1B19" stroke-opacity="0.1"/>
+
+    <text x="912" y="276" font-family="Courier New, monospace" font-size="12" fill="#1C1B19">• canvas render</text>
+    <text x="912" y="296" font-family="Courier New, monospace" font-size="12" fill="#1C1B19">• live scoreboard</text>
+    <text x="912" y="316" font-family="Courier New, monospace" font-size="12" fill="#1C1B19">• join box (humans)</text>
+
+    <line x1="912" y1="332" x2="1090" y2="332" stroke="#1C1B19" stroke-opacity="0.1"/>
+
+    <text x="912" y="356" font-family="Courier New, monospace" font-size="11" fill="#539091">reads /watch</text>
+    <text x="912" y="376" font-family="Courier New, monospace" font-size="10" fill="#8A8275">port 8080 → 80</text>
+  </g>
+
+  <!-- arrows from bots → server -->
+  <path d="M 320 221 C 400 221, 420 260, 470 265" fill="none" stroke="#539091" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M 320 299 C 400 299, 420 300, 470 300" fill="none" stroke="#539091" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M 320 377 C 400 377, 420 340, 470 335" fill="none" stroke="#539091" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M 320 455 C 400 455, 420 400, 470 380" fill="none" stroke="#539091" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- arrow from humans → server (muted, dashed to distinguish) -->
+  <path d="M 320 553 C 400 553, 420 470, 470 435" fill="none" stroke="#8A8275" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrowMuted)"/>
+
+  <!-- arrow server → spectator (broadcast) -->
+  <path d="M 760 300 C 820 300, 830 285, 890 285" fill="none" stroke="#539091" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="770" y="278" font-family="Courier New, monospace" font-size="10" letter-spacing="1" fill="#8A8275">BROADCAST · EVERY TICK</text>
+
+  <!-- footer -->
+  <text x="60" y="580" font-family="Courier New, monospace" font-size="10" letter-spacing="2" fill="#8A8275">DOCKERRR · BUILD 01 · MULTIPLAYER SNAKE LAN</text>
+</svg>
